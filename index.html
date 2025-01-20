@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Valentine's Quiz TicTacToe</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .cell {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            transition: transform 0.3s;
+        }
+        .cell:hover {
+            transform: scale(1.05);
+        }
+        .board-3d {
+            transform: perspective(1000px) rotateX(10deg);
+        }
+        .modal {
+            backdrop-filter: blur(8px);
+            display: none;
+        }
+        .winner-modal {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-pink-100 to-red-200 flex flex-col items-center justify-center p-8">
+    <h1 class="text-4xl font-bold text-pink-600 mb-8">Valentine's Quiz Tic-Tac-Toe</h1>
+    
+    <div class="text-lg font-medium text-pink-700 mb-4" id="status">ผู้เล่นถัดไป: X</div>
+    
+    <div class="board-3d grid grid-cols-3 gap-4 mb-8">
+        <!-- สร้าง 9 ช่อง -->
+    </div>
+
+    <!-- Modal สำหรับคำถาม -->
+    <div class="modal fixed inset-0 bg-black/80 flex items-center justify-center" id="questionModal">
+        <div class="bg-white shadow-2xl rounded-xl p-6 max-w-lg w-full mx-4">
+            <h2 class="text-xl font-semibold mb-4 text-pink-600" id="question"></h2>
+            <div class="grid grid-cols-1 gap-3" id="choices"></div>
+        </div>
+    </div>
+
+    <!-- Modal แสดงผู้ชนะ -->
+    <div class="winner-modal fixed inset-0 bg-black/80 flex items-center justify-center" id="winnerModal">
+        <div class="bg-white shadow-2xl border-2 border-pink-200 rounded-xl p-6 max-w-md w-full mx-4">
+            <h2 class="text-2xl text-pink-600 flex items-center gap-2 mb-4">
+                <span class="text-3xl">🎉</span> ยินดีด้วย!
+            </h2>
+            <p class="text-lg text-pink-500 mb-6" id="winnerText"></p>
+            <div class="flex justify-end">
+                <button onclick="resetGame()" class="bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 transition-all duration-200 px-6 py-2 rounded-lg font-medium">
+                    เล่นใหม่
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white/30 backdrop-blur-sm border-t border-pink-200 py-3 text-center">
+        <div class="text-pink-800 font-medium">
+            จัดทำโดย ครูนิด ศิษย์หลวงพ่อเสือ
+        </div>
+        <div class="text-pink-600 text-sm mt-1">
+            © 2025 All Rights Reserved. โปรแกรมนี้มีลิขสิทธิ์ถูกต้องตามกฎหมาย
+        </div>
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                question: "วันวาเลนไทน์ตรงกับวันที่เท่าไร?",
+                choices: ["14 มกราคม", "14 กุมภาพันธ์", "14 มีนาคม", "14 เมษายน"],
+                correct: 1
+            },
+            {
+                question: "ดอกไม้ที่นิยมให้ในวันวาเลนไทน์คือ?",
+                choices: ["ดอกกุหลาบ", "ดอกทานตะวัน", "ดอกบัว", "ดอกกล้วยไม้"],
+                correct: 0
+            },
+            {
+                question: "สีที่เป็นสัญลักษณ์ของวันวาเลนไทน์คือ?",
+                choices: ["สีเขียว", "สีน้ำเงิน", "สีแดง", "สีเหลือง"],
+                correct: 2
+            },
+            {
+                question: "ใครคือนักบุญวาเลนไทน์?",
+                choices: ["นักรบ", "นักบวช", "นักวิทยาศาสตร์", "นักดนตรี"],
+                correct: 1
+            },
+            {
+                question: "ช็อกโกแลตรูปหัวใจมีต้นกำเนิดจากประเทศ?",
+                choices: ["อังกฤษ", "ฝรั่งเศส", "สวิตเซอร์แลนด์", "เบลเยียม"],
+                correct: 3
+            }
+        ];
+
+        let board = Array(9).fill(null);
+        let xIsNext = true;
+        let currentQuestion = null;
+        let selectedCell = null;
+        let usedQuestions = [];
+
+        // สร้างกระดาน
+        const boardElement = document.querySelector('.board-3d');
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell w-20 h-20 bg-white/10 backdrop-blur-sm border-2 border-pink-300/50 rounded-xl flex items-center justify-center cursor-pointer';
+            cell.style.boxShadow = '0 10px 30px -5px rgba(0, 0, 0, 0.3)';
+            cell.onclick = () => handleCellClick(i);
+            boardElement.appendChild(cell);
+        }
+
+        function handleCellClick(index) {
+            if (board[index] || currentQuestion) return;
+
+            const availableQuestions = questions.filter((_, i) => !usedQuestions.includes(i));
+            if (availableQuestions.length === 0) return;
+
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            const questionIndex = questions.findIndex((q, i) => 
+                !usedQuestions.includes(i) && q === availableQuestions[randomIndex]
+            );
+            
+            currentQuestion = questions[questionIndex];
+            selectedCell = index;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const modal = document.getElementById('questionModal');
+            const questionElement = document.getElementById('question');
+            const choicesElement = document.getElementById('choices');
+            
+            questionElement.textContent = currentQuestion.question;
+            choicesElement.innerHTML = '';
+            
+            currentQuestion.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'p-3 text-left rounded-lg border-2 border-pink-200 hover:border-pink-500 hover:bg-pink-50 transition-colors';
+                button.textContent = choice;
+                button.onclick = () => handleAnswer(index);
+                choicesElement.appendChild(button);
+            });
+            
+            modal.style.display = 'flex';
+        }
+
+        function handleAnswer(choiceIndex) {
+            const modal = document.getElementById('questionModal');
+            modal.style.display = 'none';
+
+            if (currentQuestion.correct === choiceIndex) {
+                board[selectedCell] = xIsNext ? 'X' : 'O';
+                updateBoard();
+                
+                const winner = checkWinner();
+                if (winner) {
+                    showWinner(winner);
+                }
+                
+                xIsNext = !xIsNext;
+                usedQuestions.push(questions.indexOf(currentQuestion));
+            } else {
+                xIsNext = !xIsNext;
+            }
+            
+            currentQuestion = null;
+            selectedCell = null;
+            updateStatus();
+        }
+
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            board.forEach((value, index) => {
+                cells[index].innerHTML = value === 'X' 
+                    ? '<svg class="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+                    : value === 'O'
+                        ? '<svg class="w-12 h-12 text-pink-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+                        : '';
+            });
+        }
+
+        function checkWinner() {
+            const lines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // แนวนอน
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // แนวตั้ง
+                [0, 4, 8], [2, 4, 6] // แนวทแยง
+            ];
+
+            for (let line of lines) {
+                const [a, b, c] = line;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+            return null;
+        }
+
+        function showWinner(winner) {
+            const modal = document.getElementById('winnerModal');
+            const winnerText = document.getElementById('winnerText');
+            winnerText.textContent = `ผู้เล่น ${winner} ชนะเกม`;
+            modal.style.display = 'flex';
+        }
+
+        function resetGame() {
+            board = Array(9).fill(null);
+            xIsNext = true;
+            currentQuestion = null;
+            selectedCell = null;
+            usedQuestions = [];
+            updateBoard();
+            updateStatus();
+            document.getElementById('winnerModal').style.display = 'none';
+        }
+
+        function updateStatus() {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = `ผู้เล่นถัดไป: ${xIsNext ? 'X' : 'O'}`;
+        }
+    </script>
+</body>
+</html>
