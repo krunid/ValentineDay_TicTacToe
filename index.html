@@ -67,6 +67,15 @@
     </footer>
 
     <script>
+        // ฟังก์ชันสำหรับสุ่มลำดับอาร์เรย์
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         const questions = [
             {
                 question: "วันวาเลนไทน์ตรงกับวันที่เท่าไร?",
@@ -92,6 +101,56 @@
                 question: "ช็อกโกแลตรูปหัวใจมีต้นกำเนิดจากประเทศ?",
                 choices: ["อังกฤษ", "ฝรั่งเศส", "สวิตเซอร์แลนด์", "เบลเยียม"],
                 correct: 3
+            },
+            {
+                question: "ในภาษาดอกไม้ ดอกกุหลาบสีขาวสื่อถึงอะไร?",
+                choices: ["ความรักบริสุทธิ์", "ความหึงหวง", "ความผิดหวัง", "ความสนุกสนาน"],
+                correct: 0
+            },
+            {
+                question: "ประเทศใดมีประเพณีให้ผู้หญิงขอแต่งงานผู้ชายได้ในวันวาเลนไทน์?",
+                choices: ["สวีเดน", "ไอร์แลนด์", "ฝรั่งเศส", "อิตาลี"],
+                correct: 1
+            },
+            {
+                question: "วันวาเลนไทน์ในญี่ปุ่น ใครมักเป็นฝ่ายให้ช็อกโกแลต?",
+                choices: ["พ่อแม่", "เพื่อน", "ผู้หญิง", "ผู้ชาย"],
+                correct: 2
+            },
+            {
+                question: "สัญลักษณ์รูปหัวใจ (♥) เริ่มใช้ครั้งแรกในศตวรรษที่เท่าไร?",
+                choices: ["13", "14", "15", "16"],
+                correct: 1
+            },
+            {
+                question: "ในสมัยโรมัน เทพเจ้าคิวปิดเป็นลูกของเทพเจ้าองค์ใด?",
+                choices: ["วีนัส", "จูปิเตอร์", "เนปจูน", "มาร์ส"],
+                correct: 0
+            },
+            {
+                question: "ประเทศใดมีประเพณี 'Black Day' สำหรับคนโสดหลังวันวาเลนไทน์?",
+                choices: ["จีน", "เกาหลีใต้", "ญี่ปุ่น", "ไต้หวัน"],
+                correct: 1
+            },
+            {
+                question: "ในยุคกลาง อาหารชนิดใดถือเป็นยากระตุ้นความรัก?",
+                choices: ["แอปเปิ้ล", "ช็อกโกแลต", "หอยนางรม", "สตรอเบอร์รี่"],
+                correct: 2
+            },
+            {
+                question: "ดอกกุหลาบสีชมพูสื่อถึงความรักแบบใด?",
+                choices: ["ความรักแรกพบ", "ความรักที่อ่อนหวาน", "ความรักที่ลึกซึ้ง", "ความรักที่เร่าร้อน"],
+                correct: 1
+            },
+            {
+                question: "White Day ในญี่ปุ่นตรงกับวันที่เท่าไร?",
+                choices: ["14 มีนาคม", "14 เมษายน", "14 พฤษภาคม", "14 มิถุนายน"],
+                correct: 0
+            },
+            {
+                question: "ในสมัยโบราณ ชาวโรมันใช้อะไรเป็นน้ำหอม?",
+                choices: ["น้ำมันมะกอก", "น้ำดอกกุหลาบ", "น้ำผึ้ง", "น้ำมันหอมระเหย"],
+                correct: 1
             }
         ];
 
@@ -100,6 +159,7 @@
         let currentQuestion = null;
         let selectedCell = null;
         let usedQuestions = [];
+        let shuffledQuestions = shuffleArray([...questions]);
 
         // สร้างกระดาน
         const boardElement = document.querySelector('.board-3d');
@@ -160,7 +220,7 @@
                 }
                 
                 xIsNext = !xIsNext;
-                usedQuestions.push(questions.indexOf(currentQuestion));
+                usedQuestions.push(shuffledQuestions.indexOf(currentQuestion));
             } else {
                 xIsNext = !xIsNext;
             }
